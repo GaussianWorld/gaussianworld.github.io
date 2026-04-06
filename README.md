@@ -4,7 +4,7 @@ This repository is the source of truth for content served from `https://gaussian
 
 The SceneSplat++ project page is maintained directly in this repository under:
 
-- `scenesplat++/`
-- `https://gaussianworld.github.io/scenesplat++/`
+- `SceneSplat++/`
+- `https://gaussianworld.github.io/SceneSplat++/`
 
 The repository root is intentionally left without a landing page for now.
