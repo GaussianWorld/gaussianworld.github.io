@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GaussianWorld — Advancing 3D Scene Understanding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#2e5e7e', light: '#7db3d3', lighter: '#b9e3ff' },
+            accent: '#5daef6',
+            surface: '#f0f5f9',
+            cream: '#faf9f6',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+
+    /* Scroll animation base */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Scroll indicator bounce */
+    @keyframes bounce-slow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+    .animate-bounce-slow {
+      animation: bounce-slow 2s ease-in-out infinite;
+    }
+
+    /* Timeline card list dashes */
+    .timeline-card ul li::before {
+      content: '›\00a0';
+    }
+
+    /* Timeline card expand */
+    .timeline-card .card-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    .timeline-card:hover .card-details {
+      max-height: 200px;
+      opacity: 1;
+    }
+
+    /* Nav active link */
+    .nav-link {
+      position: relative;
+      transition: color 0.2s ease;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #2e5e7e;
+      transition: width 0.3s ease;
+    }
+    .nav-link.active::after {
+      width: 100%;
+    }
+    .nav-link.active {
+      color: #2e5e7e;
+    }
+
+    /* Timeline track gradient */
+    .timeline-track {
+      background: linear-gradient(to right, #7db3d3, #2e5e7e);
+    }
+
+    /* Avatar overlap */
+    .avatar-stack img {
+      margin-left: -14px;
+      border: 3px solid #faf9f6;
+      transition: transform 0.2s ease;
+    }
+    .avatar-stack img:first-child {
+      margin-left: 0;
+    }
+    .avatar-stack img:hover {
+      transform: scale(1.15);
+      z-index: 10;
+    }
+
+    /* Projects dropdown */
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      min-width: 200px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 0.5rem 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+      z-index: 100;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+    .nav-dropdown-menu a {
+      display: block;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      color: #4b5563;
+      transition: background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+    .nav-dropdown-menu a:hover {
+      background: #f0f5f9;
+      color: #2e5e7e;
+    }
+  </style>
+</head>
+<body class="bg-cream text-gray-800 font-sans">
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav id="navbar" class="fixed top-0 w-full z-50 transition-shadow duration-300 backdrop-blur-md bg-white/80">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#hero" class="font-serif font-bold text-xl text-primary">GaussianWorld</a>
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+        <a href="#vision" class="nav-link hover:text-primary">About</a>
+        <div class="nav-dropdown">
+          <a href="#research" class="nav-link hover:text-primary">Projects</a>
+          <div class="nav-dropdown-menu">
+            <a href="https://arxiv.org/abs/2512.17817" target="_blank">Chorus</a>
+            <a href="https://gaussianworld.github.io/SceneSplat++/" target="_blank">SceneSplat++</a>
+            <a href="https://unique1i.github.io/SceneSplat_webpage/" target="_blank">SceneSplat</a>
+            <a href="https://unique1i.github.io/ShapeSplat_webpage/" target="_blank">ShapeSplat</a>
+          </div>
+        </div>
+        <a href="#demos" class="nav-link hover:text-primary">Demos</a>
+        <a href="#team" class="nav-link hover:text-primary">Team</a>
+      </div>
+      <!-- Mobile hamburger -->
+      <button id="mobile-menu-btn" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle menu">
+        <span class="block w-6 h-0.5 bg-gray-700 transition-transform duration-300" id="bar1"></span>
+        <span class="block w-6 h-0.5 bg-gray-700 transition-opacity duration-300" id="bar2"></span>
+        <span class="block w-6 h-0.5 bg-gray-700 transition-transform duration-300" id="bar3"></span>
+      </button>
+    </div>
+    <!-- Mobile menu overlay -->
+    <div id="mobile-menu" class="md:hidden hidden bg-white/95 backdrop-blur-md border-t border-gray-100">
+      <div class="flex flex-col items-center gap-4 py-6 text-sm font-medium text-gray-600">
+        <a href="#vision" class="mobile-nav-link hover:text-primary">About</a>
+        <a href="#research" class="mobile-nav-link hover:text-primary">Research</a>
+        <a href="#demos" class="mobile-nav-link hover:text-primary">Demos</a>
+        <a href="#team" class="mobile-nav-link hover:text-primary">Team</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section id="hero" class="min-h-[50vh] flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 relative">
+    <!-- GitHub link -->
+    <a href="https://github.com/GaussianWorld" target="_blank"
+       class="mb-10 inline-flex items-center gap-2 text-gray-900 hover:scale-110 hover:-translate-y-0.5 transition-all duration-200">
+      <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+      <span class="text-sm font-medium">GitHub Page</span>
+    </a>
+
+    <h1 class="font-serif font-bold text-5xl md:text-7xl text-primary mb-[1rem]">GaussianWorld</h1>
+    <p class="text-lg md:text-xl text-gray-500 font-light max-w-2xl mb-[3.5rem]">Building a system for robust 3D scene understanding and natural language interaction within complex environments.</p>
+
+    <!-- Team avatar preview -->
+    <div class="avatar-stack flex items-center justify-center mb-14">
+      <a href="https://unique1i.github.io" target="_blank"><img src="assets/profil_pictures/Yue_Li.jpg" alt="Yue Li" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://qimaqi.github.io" target="_blank"><img src="assets/profil_pictures/Qi-Ma.png" alt="Qi Ma" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://runyiyang.github.io" target="_blank"><img src="assets/profil_pictures/Runyi_Yang.jpeg" alt="Runyi Yang" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://insait.ai/mengjiao-ma/" target="_blank"><img src="assets/profil_pictures/Mengjiao_Ma.jpg" alt="Mengjiao Ma" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://amazingren.github.io" target="_blank"><img src="assets/profil_pictures/Bin_Ren.png" alt="Bin Ren" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://insait.ai/dr-nikola-popovic/" target="_blank"><img src="assets/profil_pictures/Nikola_Popovic.jpg" alt="Nikola Popovic" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://oswaldm.github.io" target="_blank"><img src="assets/profil_pictures/Martin_R_Oswald.jpg" alt="Martin R. Oswald" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://insait.ai/dr-danda-paudel/" target="_blank"><img src="assets/profil_pictures/Danda_Paudel.jpg" alt="Danda Pani Paudel" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+    </div>
+
+    <!-- Institution logos -->
+    <div class="flex items-center justify-center gap-8 md:gap-12">
+      <a href="https://www.uva.nl/en" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/university_of_amsterdam.png" alt="University of Amsterdam" style="height: 3.0rem;"></a>
+      <a href="https://insait.ai" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/insait.png" alt="INSAIT" style="height: 3.5rem;"></a>
+      <a href="https://ethz.ch/en.html" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/eth_zurich.png" alt="ETH Zurich" style="height: 2.75rem;"></a>
+    </div>
+
+  </section>
+
+  <!-- ===== TECHNICAL VISION ===== -->
+  <section id="vision" class="py-20 px-6 bg-surface">
+    <div class="max-w-3xl mx-auto reveal">
+      <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-8 text-center">About Us</h2>
+      <p class="text-gray-600 text-lg leading-relaxed mb-6 text-justify">
+        We are building a system for robust 3D scene understanding and natural language interaction within complex environments. Our goal is to develop a foundation model that can tokenize complex 3D scenes, perform tasks such as instance detection, and enable reasoning to answer complex language queries about the state of the environment and support natural language interaction with the scene along with spatial content grounding.
+      </p>
+      <p class="text-gray-500 text-base leading-relaxed italic text-justify">
+        Our goal is to make 3D scene understanding as accessible and powerful as its 2D counterpart.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== PROJECT TIMELINE ===== -->
+  <section id="research" class="py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16 reveal">
+        <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-4">Our Research Trajectory</h2>
+        <p class="text-gray-500 text-lg">Our projects build upon each other over time to expand the systems capabilities.</p>
+      </div>
+
+      <!-- Desktop horizontal timeline -->
+      <div class="hidden md:block relative reveal">
+        <!-- Cards with arrow connectors -->
+        <div class="flex items-start relative z-10">
+          <!-- ShapeSplat -->
+          <a href="https://unique1i.github.io/ShapeSplat_webpage/" target="_blank" class="timeline-card group block flex-1 min-w-0">
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
+              <div class="h-40 overflow-hidden bg-white">
+                <video autoplay muted loop playsinline class="w-full h-full object-contain">
+                  <source src="assets/project_thumbnails/shapesplat.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div class="px-4 pt-3 pb-2">
+                <h3 class="font-bold text-primary text-lg mb-1">ShapeSplat</h3>
+                <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">3DV'25 Oral</span>
+                <ul class="text-sm text-gray-500 space-y-1">
+                  <li>Object-level 3DGS.</li>
+                  <li>Dataset of 65K objects.</li>
+                  <li>Self-supervised encoding.</li>
+                </ul>
+                <div class="card-details mt-3 pt-3 border-t border-gray-100">
+                  <p class="text-xs text-gray-400 leading-relaxed">Dataset of 65K 3D objects in Gaussian Splatting format. Gaussian-MAE architecture as well as a self-supervised training strategy for encoding collected 3D objects.</p>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Arrow -->
+          <div class="flex items-center justify-center px-1 flex-shrink-0 self-start mt-[8.5rem]">
+            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7"/>
+            </svg>
+          </div>
+
+          <!-- SceneSplat -->
+          <a href="https://unique1i.github.io/SceneSplat_webpage/" target="_blank" class="timeline-card group block flex-1 min-w-0">
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
+              <div class="h-40 overflow-hidden bg-white">
+                <img src="assets/project_thumbnails/scenesplat.png" alt="SceneSplat" class="w-full h-full object-contain">
+              </div>
+              <div class="px-4 pt-3 pb-2">
+                <h3 class="font-bold text-primary text-lg mb-1">SceneSplat</h3>
+                <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">ICCV'25 Oral</span>
+                <ul class="text-sm text-gray-500 space-y-1">
+                  <li>Indoor 3DGS.</li>
+                  <li>Dataset of 7k scenes.</li>
+                  <li>Pseudo-labels for pre-training.</li>
+                </ul>
+                <div class="card-details mt-3 pt-3 border-t border-gray-100">
+                  <p class="text-xs text-gray-400 leading-relaxed">Dataset of 7K indoor 3D scenes in Gaussian Splatting format. Method for extracting 3D semantic-language pseud-labels leveraging 2D foundation models. Pre-trained scene-level encoder. SotA open vocabulary segementation perforamnce.</p>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Arrow 2 -->
+          <div class="flex items-center justify-center px-1 flex-shrink-0 self-start mt-[8.5rem]">
+            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7"/>
+            </svg>
+          </div>
+
+          <!-- SceneSplat++ -->
+          <a href="https://gaussianworld.github.io/SceneSplat++/" target="_blank" class="timeline-card group block flex-1 min-w-0">
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
+              <div class="h-40 overflow-hidden bg-white">
+                <img src="assets/project_thumbnails/scenesplat_pp.jpeg" alt="SceneSplat++" class="w-full h-full object-contain">
+              </div>
+              <div class="px-4 pt-3 pb-2">
+                <h3 class="font-bold text-primary text-lg mb-1">SceneSplat++</h3>
+                <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">NeurIPS'25</span>
+                <ul class="text-sm text-gray-500 space-y-1">
+                  <li>Indoor & outdoor 3DGS.</li>
+                  <li>Dataset of 49k scenes.</li>
+                  <li>Comprehensive 3D benchmark.</li>
+                </ul>
+                <div class="card-details mt-3 pt-3 border-t border-gray-100">
+                  <p class="text-xs text-gray-400 leading-relaxed">Dataset scaled to 49K 3DGS scenes spanning indoor and outdoor environments. Comprehensive language-3DGS evaluation benchmark directly in 3D over 1060 scenes.</p>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Arrow 3 -->
+          <div class="flex items-center justify-center px-1 flex-shrink-0 self-start mt-[8.5rem]">
+            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7"/>
+            </svg>
+          </div>
+
+          <!-- Chorus -->
+          <a href="https://arxiv.org/abs/2512.17817" target="_blank" class="timeline-card group block flex-1 min-w-0">
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
+              <div class="h-40 overflow-hidden bg-white">
+                <img src="assets/project_thumbnails/chorus.png" alt="Chorus" class="w-full h-full object-contain">
+              </div>
+              <div class="px-4 pt-3 pb-2">
+                <h3 class="font-bold text-primary text-lg mb-1">Chorus</h3>
+                <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">CVPR'25</span>
+                <ul class="text-sm text-gray-500 space-y-1">
+                  <li>Indoor 3DGS & PC.</li>
+                  <li>Multi-teacher distillation.</li>
+                  <li>Wide task compatibility.</li>
+                </ul>
+                <div class="card-details mt-3 pt-3 border-t border-gray-100">
+                  <p class="text-xs text-gray-400 leading-relaxed">Extended pseudo-label pre-training to multiple 2D foundation model teachers. Pre-trained a 3DGS and a PC scene-level encoder. Demonstrated SotA after fine-tuning on main 3D downstream applications.</p>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Mobile vertical timeline -->
+      <div class="md:hidden space-y-6 relative reveal">
+        <!-- Vertical track -->
+        <div class="absolute left-4 top-0 bottom-0 w-[3px] rounded-full" style="background: linear-gradient(to bottom, #7db3d3, #2e5e7e);"></div>
+
+        <!-- ShapeSplat mobile -->
+        <a href="https://unique1i.github.io/ShapeSplat_webpage/" target="_blank" class="block relative pl-12">
+          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#b9e3ff] border-[3px] border-white shadow z-10"></div>
+          <div class="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <video autoplay muted loop playsinline class="w-full h-full object-cover">
+                  <source src="assets/project_thumbnails/shapesplat.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div>
+                <h3 class="font-bold text-primary">ShapeSplat</h3>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">3DV'25 Oral</span>
+              </div>
+            </div>
+            <ul class="text-sm text-gray-500 space-y-1 ml-1">
+              <li>Object-level 3DGS</li>
+              <li>65K objects, 87 categories</li>
+              <li>Self-supervised pretraining</li>
+            </ul>
+          </div>
+        </a>
+
+        <!-- SceneSplat mobile -->
+        <a href="https://unique1i.github.io/SceneSplat_webpage/" target="_blank" class="block relative pl-12">
+          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#7db3d3] border-[3px] border-white shadow z-10"></div>
+          <div class="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img src="assets/project_thumbnails/scenesplat.png" alt="SceneSplat" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h3 class="font-bold text-primary">SceneSplat</h3>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">ICCV'25 Oral</span>
+              </div>
+            </div>
+            <ul class="text-sm text-gray-500 space-y-1 ml-1">
+              <li>Indoor scene-level 3DGS</li>
+              <li>7,000 scenes collected</li>
+              <li>Pseudo-label language features</li>
+            </ul>
+          </div>
+        </a>
+
+        <!-- SceneSplat++ mobile -->
+        <a href="https://gaussianworld.github.io/SceneSplat++/" target="_blank" class="block relative pl-12">
+          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#5daef6] border-[3px] border-white shadow z-10"></div>
+          <div class="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img src="assets/project_thumbnails/scenesplat_pp.jpeg" alt="SceneSplat++" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h3 class="font-bold text-primary">SceneSplat++</h3>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">NeurIPS'25</span>
+              </div>
+            </div>
+            <ul class="text-sm text-gray-500 space-y-1 ml-1">
+              <li>Indoor + outdoor scenes</li>
+              <li>49,000 scenes at scale</li>
+              <li>3D evaluation benchmark</li>
+            </ul>
+          </div>
+        </a>
+
+        <!-- Chorus mobile -->
+        <a href="https://arxiv.org/abs/2512.17817" target="_blank" class="block relative pl-12">
+          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#2e5e7e] border-[3px] border-white shadow z-10"></div>
+          <div class="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img src="assets/project_thumbnails/chorus.png" alt="Chorus" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h3 class="font-bold text-primary">Chorus</h3>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">CVPR'25</span>
+              </div>
+            </div>
+            <ul class="text-sm text-gray-500 space-y-1 ml-1">
+              <li>Unified system</li>
+              <li>Multi-teacher distillation</li>
+              <li>Wide task compatibility</li>
+            </ul>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DEMOS ===== -->
+  <section id="demos" class="py-20 px-6 bg-surface">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-14 reveal">
+        <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-4">Demos</h2>
+        <p class="text-gray-500 text-lg">Key capabilities of our 3D systems.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+        <!-- 3D Features -->
+        <div class="reveal">
+          <div class="rounded-xl overflow-hidden shadow-lg bg-black">
+            <video autoplay muted loop playsinline class="w-full aspect-video">
+              <source src="assets/demos/3D_features.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <h3 class="font-semibold text-primary text-lg mt-4">3D Feature Extraction</h3>
+          <p class="text-sm text-gray-500 mt-1">Our system takes a 3D scene (3DGS or PC) as input and, in a single neural network forward pass, outputs a feature for each 3D primitive.</p>
+        </div>
+        <!-- 3D Localization -->
+        <div class="reveal">
+          <div class="rounded-xl overflow-hidden shadow-lg bg-black">
+            <video autoplay muted loop playsinline class="w-full aspect-video">
+              <source src="assets/demos/3D_localization.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <h3 class="font-semibold text-primary text-lg mt-4">Language Interactions</h3>
+          <p class="text-sm text-gray-500 mt-1">Our system provides real-time open-vocabulary 3D content search leveraging the initially extracted 3D features.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TEAM ===== -->
+  <section id="team" class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-14 reveal">
+        <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-4">The Team</h2>
+        <p class="text-gray-500 text-lg">Multi-institutional research group.</p>
+      </div>
+      <!-- Row 1: 5 members -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10">
+        <a href="https://unique1i.github.io" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Yue_Li.jpg" alt="Yue Li" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Yue Li</h3>
+          <p class="text-sm text-gray-500">University of Amsterdam</p>
+        </a>
+        <a href="https://qimaqi.github.io" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Qi-Ma.png" alt="Qi Ma" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Qi Ma</h3>
+          <p class="text-sm text-gray-500">ETH Zurich, INSAIT</p>
+        </a>
+        <a href="https://runyiyang.github.io" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Runyi_Yang.jpeg" alt="Runyi Yang" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Runyi Yang</h3>
+          <p class="text-sm text-gray-500">INSAIT</p>
+        </a>
+        <a href="https://insait.ai/mengjiao-ma/" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Mengjiao_Ma.jpg" alt="Mengjiao Ma" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Mengjiao Ma</h3>
+          <p class="text-sm text-gray-500">INSAIT</p>
+        </a>
+        <a href="https://amazingren.github.io" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Bin_Ren.png" alt="Bin Ren" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Bin Ren</h3>
+          <p class="text-sm text-gray-500">MBZUAI</p>
+        </a>
+      </div>
+      <!-- Row 2: 3 members -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-10 mt-10 max-w-3xl mx-auto">
+        <a href="https://insait.ai/dr-nikola-popovic/" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Nikola_Popovic.jpg" alt="Nikola Popovic" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Nikola Popovic</h3>
+          <p class="text-sm text-gray-500">INSAIT</p>
+        </a>
+        <a href="https://oswaldm.github.io" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Martin_R_Oswald.jpg" alt="Martin R. Oswald" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Martin R. Oswald</h3>
+          <p class="text-sm text-gray-500">University of Amsterdam</p>
+        </a>
+        <a href="https://insait.ai/dr-danda-paudel/" target="_blank" class="text-center reveal group">
+          <img src="assets/profil_pictures/Danda_Paudel.jpg" alt="Danda Pani Paudel" loading="lazy"
+               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+          <h3 class="font-semibold text-primary text-lg mt-4">Danda Pani Paudel</h3>
+          <p class="text-sm text-gray-500">INSAIT</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="bg-[#2e5e7e] text-white py-10 px-6">
+    <div class="max-w-5xl mx-auto text-center">
+      <p class="font-serif font-semibold text-lg mb-2">GaussianWorld</p>
+      <p class="text-sm text-white/60">&copy; 2025 GaussianWorld Research Group. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ===== JAVASCRIPT ===== -->
+  <script>
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+    const bar3 = document.getElementById('bar3');
+    let menuOpen = false;
+
+    menuBtn.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      mobileMenu.classList.toggle('hidden');
+      if (menuOpen) {
+        bar1.style.transform = 'rotate(45deg) translate(4px, 4px)';
+        bar2.style.opacity = '0';
+        bar3.style.transform = 'rotate(-45deg) translate(4px, -4px)';
+      } else {
+        bar1.style.transform = '';
+        bar2.style.opacity = '1';
+        bar3.style.transform = '';
+      }
+    });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+        menuOpen = false;
+        bar1.style.transform = '';
+        bar2.style.opacity = '1';
+        bar3.style.transform = '';
+      });
+    });
+
+    // Scroll reveal animation
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // Nav active section highlighting
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + entry.target.id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, { threshold: 0.3, rootMargin: '-80px 0px -40% 0px' });
+
+    sections.forEach(section => navObserver.observe(section));
+
+    // Nav shadow on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('shadow-md');
+      } else {
+        navbar.classList.remove('shadow-md');
+      }
+    });
+  </script>
+</body>
+</html>
