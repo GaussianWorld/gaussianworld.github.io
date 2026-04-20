@@ -30,6 +30,33 @@
   </script>
   <style>
     html { scroll-behavior: smooth; }
+    :root {
+      --section-max-width: 72rem;
+      --research-max-width: 90rem;
+      --content-narrow-width: 48rem;
+      --project-card-width: 15rem;
+      --project-arrow-width: 2rem;
+    }
+
+    .section-block {
+      padding: 5rem 1.5rem;
+    }
+    .section-shell {
+      width: min(100%, var(--section-max-width));
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .section-shell--narrow {
+      width: min(100%, var(--content-narrow-width));
+    }
+    .section-shell--research {
+      width: min(100%, var(--research-max-width));
+    }
+    .section-header {
+      max-width: 42rem;
+      margin: 0 auto 3.5rem;
+      text-align: center;
+    }
 
     /* Scroll animation base */
     .reveal {
@@ -66,6 +93,47 @@
     .timeline-card:hover .card-details {
       max-height: 200px;
       opacity: 1;
+    }
+    .project-rail-wrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      padding-bottom: 1rem;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+      scroll-padding: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: #7db3d3 #e6edf3;
+    }
+    .project-rail-wrap::-webkit-scrollbar {
+      height: 10px;
+    }
+    .project-rail-wrap::-webkit-scrollbar-track {
+      background: #e6edf3;
+      border-radius: 9999px;
+    }
+    .project-rail-wrap::-webkit-scrollbar-thumb {
+      background: #7db3d3;
+      border-radius: 9999px;
+    }
+    .project-rail {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      min-width: max-content;
+      padding: 0 0.5rem 0.75rem;
+    }
+    .project-rail .timeline-card {
+      flex: none;
+      width: var(--project-card-width);
+      min-width: var(--project-card-width);
+      scroll-snap-align: start;
+    }
+    .project-arrow {
+      flex: 0 0 var(--project-arrow-width);
+      width: var(--project-arrow-width);
+      align-self: flex-start;
+      margin-top: 8.5rem;
+      color: #2e5e7e;
     }
 
     /* Nav active link */
@@ -107,6 +175,87 @@
     .avatar-stack img:hover {
       transform: scale(1.15);
       z-index: 10;
+    }
+    .logo-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem 2rem;
+    }
+    .media-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .team-grid-primary,
+    .team-grid-secondary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+    .team-card {
+      text-align: center;
+    }
+    .team-card-image {
+      width: 9rem;
+      height: 9rem;
+      margin: 0 auto;
+      border-radius: 9999px;
+      object-fit: cover;
+      object-position: top;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+      transition: transform 0.2s ease;
+    }
+    .team-card:hover .team-card-image {
+      transform: translateY(-0.25rem);
+    }
+
+    @media (min-width: 640px) {
+      .section-block {
+        padding: 5.5rem 1.5rem;
+      }
+      .team-grid-primary,
+      .team-grid-secondary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .section-block {
+        padding: 6rem 1.5rem;
+      }
+      .section-header {
+        margin-bottom: 4rem;
+      }
+      .media-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2.5rem;
+      }
+      .team-grid-secondary {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .project-rail-wrap {
+        overflow: visible;
+        padding-bottom: 0;
+        scroll-snap-type: none;
+      }
+      .project-rail {
+        gap: 0.75rem;
+        padding: 0;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .team-grid-primary {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+      .team-grid-secondary {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
     }
 
     /* Projects dropdown */
@@ -152,10 +301,10 @@
 
   <!-- ===== NAVIGATION ===== -->
   <nav id="navbar" class="fixed top-0 w-full z-50 transition-shadow duration-300 backdrop-blur-md bg-white/80">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="section-shell px-6 py-4 flex items-center justify-between">
       <a href="#hero" class="font-serif font-bold text-xl text-primary">GaussianWorld</a>
       <!-- Desktop links -->
-      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+      <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-gray-600">
         <a href="#vision" class="nav-link hover:text-primary">About</a>
         <div class="nav-dropdown">
           <a href="#research" class="nav-link hover:text-primary">Projects</a>
@@ -170,14 +319,14 @@
         <a href="#team" class="nav-link hover:text-primary">Team</a>
       </div>
       <!-- Mobile hamburger -->
-      <button id="mobile-menu-btn" class="md:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle menu">
+      <button id="mobile-menu-btn" class="lg:hidden flex flex-col gap-1.5 p-2" aria-label="Toggle menu">
         <span class="block w-6 h-0.5 bg-gray-700 transition-transform duration-300" id="bar1"></span>
         <span class="block w-6 h-0.5 bg-gray-700 transition-opacity duration-300" id="bar2"></span>
         <span class="block w-6 h-0.5 bg-gray-700 transition-transform duration-300" id="bar3"></span>
       </button>
     </div>
     <!-- Mobile menu overlay -->
-    <div id="mobile-menu" class="md:hidden hidden bg-white/95 backdrop-blur-md border-t border-gray-100">
+    <div id="mobile-menu" class="lg:hidden hidden bg-white/95 backdrop-blur-md border-t border-gray-100">
       <div class="flex flex-col items-center gap-4 py-6 text-sm font-medium text-gray-600">
         <a href="#vision" class="mobile-nav-link hover:text-primary">About</a>
         <a href="#research" class="mobile-nav-link hover:text-primary">Research</a>
@@ -188,7 +337,7 @@
   </nav>
 
   <!-- ===== HERO ===== -->
-  <section id="hero" class="min-h-[50vh] flex flex-col items-center justify-center text-center px-4 pt-24 pb-20 relative">
+  <section id="hero" class="min-h-[50vh] flex flex-col items-center justify-center text-center px-4 pt-24 pb-16 sm:pb-20 relative">
     <!-- GitHub link -->
     <a href="https://github.com/GaussianWorld" target="_blank"
        class="mb-10 inline-flex items-center gap-2 text-gray-900 hover:scale-110 hover:-translate-y-0.5 transition-all duration-200">
@@ -198,13 +347,14 @@
       <span class="text-sm font-medium">GitHub Page</span>
     </a>
 
-    <h1 class="font-serif font-bold text-5xl md:text-7xl text-primary mb-[1rem]">GaussianWorld</h1>
-    <p class="text-lg md:text-xl text-gray-500 font-light max-w-2xl mb-[3.5rem]">Building a system for robust 3D scene understanding and natural language interaction within complex environments.</p>
+    <h1 class="font-serif font-bold text-4xl sm:text-5xl lg:text-7xl text-primary mb-[1rem]">GaussianWorld</h1>
+    <p class="text-base sm:text-lg lg:text-xl text-gray-500 font-light max-w-2xl mb-10 sm:mb-14">Building a system for robust 3D scene understanding and natural language interaction within complex environments.</p>
 
     <!-- Team avatar preview -->
-    <div class="avatar-stack flex items-center justify-center mb-14">
+    <div id="hero-avatar-preview" class="avatar-stack hidden flex items-center justify-center mb-14">
       <a href="https://unique1i.github.io" target="_blank"><img src="assets/profil_pictures/Yue_Li.jpg" alt="Yue Li" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
       <a href="https://qimaqi.github.io" target="_blank"><img src="assets/profil_pictures/Qi-Ma.png" alt="Qi Ma" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
+      <a href="https://insait.ai/anna-maria-halacheva/" target="_blank"><img src="assets/profil_pictures/Anna-Maria_Halacheva.jpg" alt="Anna-Maria Halacheva" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
       <a href="https://runyiyang.github.io" target="_blank"><img src="assets/profil_pictures/Runyi_Yang.jpeg" alt="Runyi Yang" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
       <a href="https://insait.ai/mengjiao-ma/" target="_blank"><img src="assets/profil_pictures/Mengjiao_Ma.jpg" alt="Mengjiao Ma" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
       <a href="https://amazingren.github.io" target="_blank"><img src="assets/profil_pictures/Bin_Ren.png" alt="Bin Ren" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover object-top relative"></a>
@@ -214,8 +364,8 @@
     </div>
 
     <!-- Institution logos -->
-    <div class="flex items-center justify-center gap-8 md:gap-12">
-      <a href="https://www.uva.nl/en" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/university_of_amsterdam.png" alt="University of Amsterdam" style="height: 3.0rem;"></a>
+    <div class="logo-strip">
+      <a href="https://www.uva.nl/en/about-the-uva/about-the-uva.html" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/university_of_amsterdam.png" alt="University of Amsterdam" style="height: 3.0rem;"></a>
       <a href="https://insait.ai" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/insait.png" alt="INSAIT" style="height: 3.5rem;"></a>
       <a href="https://ethz.ch/en.html" target="_blank" class="hover:scale-110 transition-transform duration-200"><img src="assets/institution_logos/eth_zurich.png" alt="ETH Zurich" style="height: 2.75rem;"></a>
     </div>
@@ -223,32 +373,29 @@
   </section>
 
   <!-- ===== TECHNICAL VISION ===== -->
-  <section id="vision" class="py-20 px-6 bg-surface">
-    <div class="max-w-3xl mx-auto reveal">
+  <section id="vision" class="section-block bg-surface">
+    <div class="section-shell section-shell--narrow reveal">
       <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-8 text-center">About Us</h2>
       <p class="text-gray-600 text-lg leading-relaxed mb-6 text-justify">
-        We are building a system for robust 3D scene understanding and natural language interaction within complex environments. Our goal is to develop a foundation model that can tokenize complex 3D scenes, perform tasks such as instance detection, and enable reasoning to answer complex language queries about the state of the environment and support natural language interaction with the scene along with spatial content grounding.
-      </p>
-      <p class="text-gray-500 text-base leading-relaxed italic text-justify">
-        Our goal is to make 3D scene understanding as accessible and powerful as its 2D counterpart.
-      </p>
+        We are building a system for robust 3D scene understanding and natural language interaction within complex environments. Our goal is to develop a foundation model that can tokenize complex 3D scenes, perform instance detection, and enable spatial reasoning to answer complex language queries—ultimately working to make 3D scene understanding as accessible and powerful as its 2D counterpart.
     </div>
   </section>
 
   <!-- ===== PROJECT TIMELINE ===== -->
-  <section id="research" class="py-20 px-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-16 reveal">
+  <section id="research" class="section-block">
+    <div class="section-shell section-shell--research">
+      <div class="section-header reveal">
         <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-4">Our Research Trajectory</h2>
         <p class="text-gray-500 text-lg">Our projects build upon each other over time to expand the systems capabilities.</p>
       </div>
 
       <!-- Desktop horizontal timeline -->
-      <div class="hidden md:block relative reveal">
-        <!-- Cards with arrow connectors -->
-        <div class="flex items-start relative z-10">
+      <div class="hidden lg:block relative reveal">
+        <div class="project-rail-wrap">
+          <!-- Cards with arrow connectors -->
+          <div class="project-rail relative z-10">
           <!-- ShapeSplat -->
-          <a href="https://unique1i.github.io/ShapeSplat_webpage/" target="_blank" class="timeline-card group block flex-1 min-w-0">
+          <a href="https://unique1i.github.io/ShapeSplat_webpage/" target="_blank" class="timeline-card group block">
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
               <div class="h-40 overflow-hidden bg-white">
                 <video autoplay muted loop playsinline class="w-full h-full object-contain">
@@ -259,26 +406,26 @@
                 <h3 class="font-bold text-primary text-lg mb-1">ShapeSplat</h3>
                 <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">3DV'25 Oral</span>
                 <ul class="text-sm text-gray-500 space-y-1">
-                  <li>Object-level 3DGS.</li>
-                  <li>Dataset of 65K objects.</li>
-                  <li>Self-supervised encoding.</li>
+                  <li>Object-level encoder.</li>
+                  <li>Dataset of 206K 3DGS objects.</li>
+                  <li>Self-supervised pretraining.</li>
                 </ul>
                 <div class="card-details mt-3 pt-3 border-t border-gray-100">
-                  <p class="text-xs text-gray-400 leading-relaxed">Dataset of 65K 3D objects in Gaussian Splatting format. Gaussian-MAE architecture as well as a self-supervised training strategy for encoding collected 3D objects.</p>
+                  <p class="text-xs text-gray-400 leading-relaxed">Dataset of 206K 3DGS objects. Gaussian-MAE architecture as well as a self-supervised training strategy for encoding collected 3D objects.</p>
                 </div>
               </div>
             </div>
           </a>
 
           <!-- Arrow -->
-          <div class="flex items-center justify-center px-1 flex-shrink-0 self-start mt-[8.5rem]">
-            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <div class="project-arrow flex items-center justify-center px-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
           </div>
 
           <!-- SceneSplat -->
-          <a href="https://unique1i.github.io/SceneSplat_webpage/" target="_blank" class="timeline-card group block flex-1 min-w-0">
+          <a href="https://unique1i.github.io/SceneSplat_webpage/" target="_blank" class="timeline-card group block">
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
               <div class="h-40 overflow-hidden bg-white">
                 <img src="assets/project_thumbnails/scenesplat.png" alt="SceneSplat" class="w-full h-full object-contain">
@@ -287,9 +434,9 @@
                 <h3 class="font-bold text-primary text-lg mb-1">SceneSplat</h3>
                 <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">ICCV'25 Oral</span>
                 <ul class="text-sm text-gray-500 space-y-1">
-                  <li>Indoor 3DGS.</li>
-                  <li>Dataset of 7k scenes.</li>
-                  <li>Pseudo-labels for pre-training.</li>
+                  <li>Indoor 3DGS encoder.</li>
+                  <li>Dataset of 7K 3DGS scenes.</li>
+                  <li>Language-aligned pretraining.</li>
                 </ul>
                 <div class="card-details mt-3 pt-3 border-t border-gray-100">
                   <p class="text-xs text-gray-400 leading-relaxed">Dataset of 7K indoor 3D scenes in Gaussian Splatting format. Method for extracting 3D semantic-language pseud-labels leveraging 2D foundation models. Pre-trained scene-level encoder. SotA open vocabulary segementation perforamnce.</p>
@@ -299,14 +446,42 @@
           </a>
 
           <!-- Arrow 2 -->
-          <div class="flex items-center justify-center px-1 flex-shrink-0 self-start mt-[8.5rem]">
-            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <div class="project-arrow flex items-center justify-center px-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 5l7 7-7 7"/>
+            </svg>
+          </div>
+
+          <!-- GaussianVLM -->
+          <a href="https://insait-institute.github.io/gaussianvlm.github.io/" target="_blank" class="timeline-card group block">
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
+              <div class="h-40 overflow-hidden bg-white">
+                <img src="assets/project_thumbnails/gaussianvlm.png" alt="GaussianVLM" class="w-full h-full object-contain">
+              </div>
+              <div class="px-4 pt-3 pb-2">
+                <h3 class="font-bold text-primary text-lg mb-1">GaussianVLM</h3>
+                <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">RA-L '25</span>
+                <ul class="text-sm text-gray-500 space-y-1">
+                  <li>3DGS scene VLM.</li>
+                  <li>Compact scene tokens.</li>
+                  <li>Embodied reasoning support.</li>
+                </ul>
+                <div class="card-details mt-3 pt-3 border-t border-gray-100">
+                  <p class="text-xs text-gray-400 leading-relaxed">Scene-centric 3D vision-language modeling on Gaussian splats with language-aligned scene representations and compact task-relevant tokens for embodied reasoning.</p>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- Arrow 3 -->
+          <div class="project-arrow flex items-center justify-center px-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
           </div>
 
           <!-- SceneSplat++ -->
-          <a href="https://gaussianworld.github.io/SceneSplat++/" target="_blank" class="timeline-card group block flex-1 min-w-0">
+          <a href="https://gaussianworld.github.io/SceneSplat++/" target="_blank" class="timeline-card group block">
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
               <div class="h-40 overflow-hidden bg-white">
                 <img src="assets/project_thumbnails/scenesplat_pp.jpeg" alt="SceneSplat++" class="w-full h-full object-contain">
@@ -316,7 +491,7 @@
                 <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">NeurIPS'25</span>
                 <ul class="text-sm text-gray-500 space-y-1">
                   <li>Indoor & outdoor 3DGS.</li>
-                  <li>Dataset of 49k scenes.</li>
+                  <li>Dataset of 49K scenes.</li>
                   <li>Comprehensive 3D benchmark.</li>
                 </ul>
                 <div class="card-details mt-3 pt-3 border-t border-gray-100">
@@ -326,15 +501,15 @@
             </div>
           </a>
 
-          <!-- Arrow 3 -->
-          <div class="flex items-center justify-center px-1 flex-shrink-0 self-start mt-[8.5rem]">
-            <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Arrow 4 -->
+          <div class="project-arrow flex items-center justify-center px-1">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7"/>
             </svg>
           </div>
 
           <!-- Chorus -->
-          <a href="https://arxiv.org/abs/2512.17817" target="_blank" class="timeline-card group block flex-1 min-w-0">
+          <a href="https://arxiv.org/abs/2512.17817" target="_blank" class="timeline-card group block">
             <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-primary-light">
               <div class="h-40 overflow-hidden bg-white">
                 <img src="assets/project_thumbnails/chorus.png" alt="Chorus" class="w-full h-full object-contain">
@@ -343,7 +518,7 @@
                 <h3 class="font-bold text-primary text-lg mb-1">Chorus</h3>
                 <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary mb-3">CVPR'26 Oral</span>
                 <ul class="text-sm text-gray-500 space-y-1">
-                  <li>Indoor 3DGS & PC.</li>
+                  <li>Indoor 3DGS & Point Clouds.</li>
                   <li>Multi-teacher distillation.</li>
                   <li>Wide task compatibility.</li>
                 </ul>
@@ -353,11 +528,12 @@
               </div>
             </div>
           </a>
+          </div>
         </div>
       </div>
 
       <!-- Mobile vertical timeline -->
-      <div class="md:hidden space-y-6 relative reveal">
+      <div class="lg:hidden space-y-6 relative reveal">
         <!-- Vertical track -->
         <div class="absolute left-4 top-0 bottom-0 w-[3px] rounded-full" style="background: linear-gradient(to bottom, #7db3d3, #2e5e7e);"></div>
 
@@ -405,9 +581,30 @@
           </div>
         </a>
 
+        <!-- GaussianVLM mobile -->
+        <a href="https://insait-institute.github.io/gaussianvlm.github.io/" target="_blank" class="block relative pl-12">
+          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#5daef6] border-[3px] border-white shadow z-10"></div>
+          <div class="bg-white rounded-xl shadow-md p-4 border border-gray-100">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img src="assets/project_thumbnails/gaussianvlm.png" alt="GaussianVLM" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <h3 class="font-bold text-primary">GaussianVLM</h3>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">RA-L '25</span>
+              </div>
+            </div>
+            <ul class="text-sm text-gray-500 space-y-1 ml-1">
+              <li>Gaussian-splat 3D VLM</li>
+              <li>Language-aligned scene tokens</li>
+              <li>Embodied reasoning support</li>
+            </ul>
+          </div>
+        </a>
+
         <!-- SceneSplat++ mobile -->
         <a href="https://gaussianworld.github.io/SceneSplat++/" target="_blank" class="block relative pl-12">
-          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#5daef6] border-[3px] border-white shadow z-10"></div>
+          <div class="absolute left-[10px] top-6 w-4 h-4 rounded-full bg-[#4c8fc6] border-[3px] border-white shadow z-10"></div>
           <div class="bg-white rounded-xl shadow-md p-4 border border-gray-100">
             <div class="flex items-center gap-3 mb-2">
               <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
@@ -451,15 +648,15 @@
   </section>
 
   <!-- ===== DEMOS ===== -->
-  <section id="demos" class="py-20 px-6 bg-surface">
-    <div class="max-w-5xl mx-auto">
-      <div class="text-center mb-14 reveal">
+  <section id="demos" class="section-block bg-surface">
+    <div class="section-shell">
+      <div class="section-header reveal">
         <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-4">Demos</h2>
         <p class="text-gray-500 text-lg">Key capabilities of our 3D systems.</p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
+      <div class="media-grid">
         <!-- 3D Features -->
-        <div class="reveal">
+        <div class="reveal media-card">
           <div class="rounded-xl overflow-hidden shadow-lg bg-black">
             <video autoplay muted loop playsinline class="w-full aspect-video">
               <source src="assets/demos/3D_features.mp4" type="video/mp4">
@@ -470,7 +667,7 @@
           <p class="text-sm text-gray-500 mt-1">Our system takes a 3D scene (3DGS or PC) as input and, in a single neural network forward pass, outputs a feature for each 3D primitive.</p>
         </div>
         <!-- 3D Localization -->
-        <div class="reveal">
+        <div class="reveal media-card">
           <div class="rounded-xl overflow-hidden shadow-lg bg-black">
             <video autoplay muted loop playsinline class="w-full aspect-video">
               <source src="assets/demos/3D_localization.mp4" type="video/mp4">
@@ -485,62 +682,80 @@
   </section>
 
   <!-- ===== TEAM ===== -->
-  <section id="team" class="py-20 px-6">
-    <div class="max-w-5xl mx-auto">
-      <div class="text-center mb-14 reveal">
+  <section id="team" class="section-block">
+    <div class="section-shell">
+      <div class="section-header reveal">
         <h2 class="font-serif font-bold text-3xl md:text-4xl text-primary mb-4">The Team</h2>
         <p class="text-gray-500 text-lg">Multi-institutional research group.</p>
       </div>
-      <!-- Row 1: 5 members -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10">
-        <a href="https://unique1i.github.io" target="_blank" class="text-center reveal group">
+      <!-- Row 1: 6 members -->
+      <div class="team-grid-primary">
+        <a href="https://unique1i.github.io" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Yue_Li.jpg" alt="Yue Li" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Yue Li</h3>
           <p class="text-sm text-gray-500">University of Amsterdam</p>
         </a>
-        <a href="https://qimaqi.github.io" target="_blank" class="text-center reveal group">
+        <a href="https://qimaqi.github.io" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Qi-Ma.png" alt="Qi Ma" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Qi Ma</h3>
           <p class="text-sm text-gray-500">ETH Zurich, INSAIT</p>
         </a>
-        <a href="https://runyiyang.github.io" target="_blank" class="text-center reveal group">
+        <a href="https://insait.ai/anna-maria-halacheva/" target="_blank" class="team-card reveal group">
+          <img src="assets/profil_pictures/Anna-Maria_Halacheva.jpg" alt="Anna-Maria Halacheva" loading="lazy"
+               class="team-card-image">
+          <h3 class="font-semibold text-primary text-lg mt-4">Anna-Maria Halacheva</h3>
+          <p class="text-sm text-gray-500">INSAIT</p>
+        </a>
+        <a href="https://runyiyang.github.io" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Runyi_Yang.jpeg" alt="Runyi Yang" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Runyi Yang</h3>
           <p class="text-sm text-gray-500">INSAIT</p>
         </a>
-        <a href="https://insait.ai/mengjiao-ma/" target="_blank" class="text-center reveal group">
+        <a href="https://insait.ai/mengjiao-ma/" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Mengjiao_Ma.jpg" alt="Mengjiao Ma" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Mengjiao Ma</h3>
           <p class="text-sm text-gray-500">INSAIT</p>
         </a>
-        <a href="https://amazingren.github.io" target="_blank" class="text-center reveal group">
+        <a href="https://amazingren.github.io" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Bin_Ren.png" alt="Bin Ren" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Bin Ren</h3>
           <p class="text-sm text-gray-500">MBZUAI</p>
         </a>
       </div>
-      <!-- Row 2: 3 members -->
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-10 mt-10 max-w-3xl mx-auto">
-        <a href="https://insait.ai/dr-nikola-popovic/" target="_blank" class="text-center reveal group">
+      <!-- Row 2: 5 members -->
+      <div class="team-grid-secondary mt-10">
+        <a href="https://insait.ai/dr-nikola-popovic/" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Nikola_Popovic.jpg" alt="Nikola Popovic" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Nikola Popovic</h3>
           <p class="text-sm text-gray-500">INSAIT</p>
         </a>
-        <a href="https://oswaldm.github.io" target="_blank" class="text-center reveal group">
+        <a href="https://staff.fnwi.uva.nl/th.gevers/" target="_blank" class="team-card reveal group">
+          <img src="assets/profil_pictures/Theo_Gevers.jpg" alt="Theo Gevers" loading="lazy"
+               class="team-card-image">
+          <h3 class="font-semibold text-primary text-lg mt-4">Theo Gevers</h3>
+          <p class="text-sm text-gray-500">University of Amsterdam</p>
+        </a>
+        <a href="https://insait.ai/prof-luc-van-gool/" target="_blank" class="team-card reveal group">
+          <img src="assets/profil_pictures/Luc_Van_Gool.jpeg" alt="Luc Van Gool" loading="lazy"
+               class="team-card-image">
+          <h3 class="font-semibold text-primary text-lg mt-4">Luc Van Gool</h3>
+          <p class="text-sm text-gray-500">INSAIT, ETH Zurich</p>
+        </a>
+        <a href="https://oswaldm.github.io" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Martin_R_Oswald.jpg" alt="Martin R. Oswald" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Martin R. Oswald</h3>
           <p class="text-sm text-gray-500">University of Amsterdam</p>
         </a>
-        <a href="https://insait.ai/dr-danda-paudel/" target="_blank" class="text-center reveal group">
+        <a href="https://insait.ai/dr-danda-paudel/" target="_blank" class="team-card reveal group">
           <img src="assets/profil_pictures/Danda_Paudel.jpg" alt="Danda Pani Paudel" loading="lazy"
-               class="w-36 h-36 md:w-40 md:h-40 rounded-full object-cover object-top mx-auto shadow-md hover:-translate-y-1 transition-transform duration-200">
+               class="team-card-image">
           <h3 class="font-semibold text-primary text-lg mt-4">Danda Pani Paudel</h3>
           <p class="text-sm text-gray-500">INSAIT</p>
         </a>
@@ -550,14 +765,20 @@
 
   <!-- ===== FOOTER ===== -->
   <footer class="bg-[#2e5e7e] text-white py-10 px-6">
-    <div class="max-w-5xl mx-auto text-center">
+    <div class="section-shell text-center">
       <p class="font-serif font-semibold text-lg mb-2">GaussianWorld</p>
-      <p class="text-sm text-white/60">&copy; 2025 GaussianWorld Research Group. All rights reserved.</p>
+      <p class="text-sm text-white/60">&copy; 2026 GaussianWorld Research Team. All rights reserved.</p>
     </div>
   </footer>
 
   <!-- ===== JAVASCRIPT ===== -->
   <script>
+    const showHeroProfiles = false;
+    const heroAvatarPreview = document.getElementById('hero-avatar-preview');
+    if (showHeroProfiles) {
+      heroAvatarPreview.classList.remove('hidden');
+    }
+
     // Mobile menu toggle
     const menuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
